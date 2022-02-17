@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+      <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <title>{% block title %}Store Update Page{% endblock %}</title>
+    <style>
+        .container{
+        margin-right: auto;
+        margin-left: auto;
+        width: 40%;
+        }
+        .header {
+        padding: 30px;
+        width: 50%;
+        }
+    </style>
+
+<script async src='/cdn-cgi/bm/cv/669835187/api.js'></script></head>
+<body>
+<!--    navigation bar-->
+<nav class="navbar bg-steel">
+<a class="navbar-brand" href="{{ url_for('staffhome') }}">Warehouse Management</a>
+  <div id="navbarNav">
+    <ul class="navbar-nav" id="navbarUL">
+        <li class="nav-item navBarIL"><a class="nav-link navA" href="{{ url_for('staffprofile') }}">Profile</a></li>
+        <li class="nav-item navBarIL"><a class="nav-link navA" href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="sidebar">
+    <a class="active" href="{{ url_for('suppliermenu') }}">Supplier</a>
+    <a class="active" href="{{ url_for('storemenu') }}">Store</a>
+    <a class="active" href="{{ url_for('stockmenu') }}">Stocks</a>
+</div>
+<div class="container">
+<div class="header">
+    <h1><strong>{% block header %}Store Update{% endblock %}</strong></h1>
+</div>
+<br>
+
+  {# get_flashed_messages() is auto sent to the template with the flash() call #}
+      {% for mess in get_flashed_messages()  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <button type="button" class="fade-close close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {{mess}}
+        </div>
+      {% endfor %}
+
+{% block content %}
+    <form action = "#" method = "POST" onsubmit="return myFunction()">
+         <label class="form-label" >Username:</label>
+        <select class="form-control form-select" name="code">
+        {% for ex in exist %}
+        <option value="{{ ex[0] }}">{{ ex[0] }}</option>
+        {% endfor %}
+        </select>
+        <br>
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
+        <br>
+        {{ form.location.label(class="form-label") }}
+        {{ form.location(class="form-control") }}
+        <br>
+        {{ form.address.label(class="form-label") }}
+        {{ form.address(class="form-control") }}
+        <br>
+        <button type="submit" name="button" class="button">Submit</button>
+        <br><br>
+        <a href="/storemenu">Return to previous page</a>
+    </form>
+{% endblock %}
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+{% block scripts %}
+<script>
+function myFunction() {
+  let text = "Press a button!\nConfirm to submit or cancel.";
+  if (confirm(text) == true) {
+    text = "You pressed OK!";
+    return true;
+  } else {
+    text = "You canceled!";
+    return false;
+  }
+}
+</script>
+{% endblock %}
+<script type="text/javascript">(function(){window['__CF$cv$params']={r:'6ddb0fd4c9244c17',m:'C_xwbtmJLbQGqoM38KweXcR3w5nVTxaHiNu4Mv_E6CM-1644891676-0-ATjv1t2tQhXljj7QznAvacHhqxAD5AccQ82ND1pH32aaO3AWsggB5LE+EntEV+TYh0YU0Mf7er1W81gkyMe8jDkNTXTSXJ2gbRn0hI3PV9yuoJL9HAvKH9cH2FvuWY/dj3Q5rhDXeKHR+C7Y2h9+fo81Jw93jOxqvl4PpoaPVMYscPzwfaJggde7kaNVJeu8KiI4fC928wxGwmqkEWby/IQ=',s:[0x1573bf890a,0x5eeae3c8b5],}})();</script></body>
+</html>

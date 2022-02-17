@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+      <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/dataTables.bootstrap.min.css" /> -->
+    <title>{% block title %}Supplier View Page{% endblock %}</title>
+    <style>
+        .container{
+        margin-right: auto;
+        margin-left: 220px;
+        width: 80%;
+        }
+        .header {
+        padding: 30px;
+        width: 50%;
+        }
+        table {
+        border-collapse: collapse;
+        width: 90%;
+        position: relative;
+        margin-right: auto;
+        margin-left: auto;
+        }
+        td, th {
+        #border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        tr:nth-child(even) {
+        background-color: #f2f2f2;
+        }
+        th {
+        background: white;
+        position: sticky;
+        top: 0;
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+        }
+        .stocks tr:hover {
+        background-color: #ddd;
+        }
+    </style>
+
+</head>
+<body>
+<!--    navigation bar-->
+<nav class="navbar bg-steel">
+<a class="navbar-brand" href="{{ url_for('staffhome') }}">Warehouse Management</a>
+  <div id="navbarNav">
+    <ul class="navbar-nav" id="navbarUL">
+        <li class="nav-item navBarIL"><a class="nav-link navA" href="{{ url_for('staffprofile') }}">Profile</a></li>
+        <li class="nav-item navBarIL"><a class="nav-link navA" href="{{ url_for('logout') }}">Logout</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="sidebar">
+    <a class="active" href="{{ url_for('suppliermenu') }}">Supplier</a>
+    <a class="active" href="{{ url_for('storemenu') }}">Store</a>
+    <a class="active" href="{{ url_for('stockmenu') }}">Stocks</a>
+</div>
+<div class="container">
+<div class="header">
+    <h1><strong>{% block header %}Supplier View{% endblock %}</strong></h1>
+</div>
+<br>
+
+  {# get_flashed_messages() is auto sent to the template with the flash() call #}
+      {% for mess in get_flashed_messages()  %}
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <button type="button" class="fade-close close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        {{mess}}
+        </div>
+      {% endfor %}
+{% block content %}
+    <form action="#" method="POST">
+        <div>
+        <table class="stocks" cellpadding="0" cellspacing="0" border="0" id="stocks">
+            <thead>
+            <tr>
+                {% for header in headings %}
+                <th style="background-color: #5f788a; color: white">{{ header }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for row in data %}
+            <tr>
+                {% for cell in row %}
+                <td>{{ cell }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </form>
+        <br><br>
+    <a href="/suppliermenu">Return to previous page</a>
+{% endblock %}
+</div>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.js"></script>
+    {% block scripts %}
+      <script>
+        $(document).ready(function () {
+          $('#stocks').DataTable({
+            columns: [
+              null,
+              null,
+              {orderable: false, searchable: false},
+              {orderable: false, searchable: false},
+              null
+              ],
+          });
+        });
+      </script>
+    {% endblock %}
+</body>
+</html>

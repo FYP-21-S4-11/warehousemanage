@@ -1,0 +1,130 @@
+.container{
+    margin-right: auto;
+    margin-left: auto;
+    align-items: center;
+
+}
+.header{
+    margin-right: auto;
+    margin-left: auto;
+    font-weight: bold;
+    color: GRAY;
+    font-size: 50px;
+    text-align: center;
+    padding 10px;
+}
+/*login page*/
+button {
+    color: WHITE;
+    background-color: #5f788a;
+    font-size: 18px;
+    border-radius: 12px;
+    padding: 9px 25px;
+    cursor: pointer
+    transition: background 0.5s;
+    text-align: center;
+}
+button-lg:hover {
+    color: WHITE;
+    background-color: #cbd5db;
+}
+/*navigation bar*/
+.bg-steel {
+    background-color: #5f788a;
+    text-align: center;
+
+}
+.navbar-brand {
+    color: white;
+}
+.site-header .navbar-nav .nav-link {
+    color: #cbd5db;
+}
+.site-header .navbar-nav .nav-link:hover {
+    color: #ffffff;
+}
+nav {
+    flex: 1;
+    text-align: right;
+    align-items: right;
+
+}
+#navbarUL {
+    display: inline-block;
+    list-style-type: none;
+}
+.navBarIL {
+    display: inline-block;
+    margin-right: 20px;
+}
+.navA {
+    text-decoration: none;
+    color: white;
+
+}
+/*sidebar*/
+.sidebar {
+    margin: 0;
+    padding: 0;
+    width: 200px;
+    background-color: #f1f1f1;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+}
+.sidebar a {
+    display: block;
+    color: black;
+    padding: 16px;
+    text-decoration: none;
+}
+.sidebar a.active {
+    background-color: #cbd5db;
+    color: GRAY;
+}
+.sidebar a:hover {
+    background-color: #555;
+    color: white;
+}
+/*adminmenu button*/
+.menupages {
+    cursor: pointer;
+    display: block;
+    background: #cbd5db;
+    box-shadow: 0 2px 48px 0 rgba(0, 0, 0, 0.10);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.5s;
+    position: relative;
+    margin: 0 60px 25px 210px;
+    width: 25%;
+    text-align: center;
+}
+.menupages span {
+    cursor: pointer;
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+.menupages span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.menupages:hover span {
+  padding-right: 25px;
+}
+
+.menupages:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+/*welcome user*/
+h2 p {
+    margin-left: 100px;
+}
