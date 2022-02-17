@@ -7,9 +7,10 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
 from application import app
-from application import mydb as ksql
 from webforms import TopicForm, ReportSelectForm
+from application import getconn
 
+ksql = getconn()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")

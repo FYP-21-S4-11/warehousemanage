@@ -6,8 +6,10 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 from kafka import KafkaProducer
 
 from application import app
-from application import mydb as ksql
 from webforms import StoreAddForm, StoreUpdateForm
+from application import getconn
+
+ksql = getconn()
 
 
 def json_serializer(data):
