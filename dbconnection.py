@@ -3,9 +3,9 @@ import os
 class dbcon:
 
     mydb = mysql.connector.connect(
-        host="34.125.123.226",
-        user="root",
-        password="root",
+        host="0.0.0.0",
+        user="user",
+        password="userpw",
         database="fypdatabase",
         auth_plugin="mysql_native_password",
         autocommit=True)
