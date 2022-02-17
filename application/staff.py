@@ -1,9 +1,9 @@
 from flask import Flask, redirect, url_for, render_template, request, session, flash, json
 from webforms import StaffAddForm
 from application import app
-from application import init_connection_engine
+from application import open_connection
 
-ksql = init_connection_engine()
+ksql = open_connection()
 
 #kafka stuff
 #=======================================

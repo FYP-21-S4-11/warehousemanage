@@ -7,9 +7,9 @@ from kafka import KafkaProducer
 
 from application import app
 from webforms import SupplierAddForm
-from application import init_connection_engine
+from application import open_connection
 
-ksql = init_connection_engine()
+ksql = open_connection()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")

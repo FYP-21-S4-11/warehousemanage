@@ -7,9 +7,9 @@ from kafka import KafkaProducer
 
 from application import app
 from webforms import QuantityForRemove
-from application import init_connection_engine
+from application import open_connection
 
-ksql = init_connection_engine()
+ksql = open_connection()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -293,7 +293,7 @@ def sendstore():
                     return render_template("tostore.html", prod=prod, code=scode, form= form)
                 elif int(quantity) <= int(d[0]):
                     flash("No negative number!")
-                    return render_template("tostore.html", prod=prod, form=form)
+                    return render_template("tostore.html", prod=prod, form=form, code=scode)
                 elif int(quantity) == int(data[0]):
                     cur = ksql.cursor()
                     cur.execute("DELETE FROM Stock WHERE ProductSKU = %s", (sku,))
