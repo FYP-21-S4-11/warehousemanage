@@ -10,7 +10,7 @@ import os
 class dbcon:
 
     mydb = mysql.connector.connect(
-        host="34.125.123.226",
+        host="localhost",
         username="user",
         password="root",
         port="3306",
