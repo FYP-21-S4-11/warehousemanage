@@ -1,6 +1,5 @@
-
-from flask import Flask, app
 import pymysql.cursors
+from flask import Flask
 
 
 def open_connection():
