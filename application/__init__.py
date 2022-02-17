@@ -7,7 +7,7 @@ from google.cloud.sql.connector import connector
 
 def getconn() -> pymysql.connections.Connection:
     conn: pymysql.connections.Connection = connector.connect(
-        "project:numeric-asset-341503:us-west4:fypdatabase",
+        "project:us-west4:fypdatabase",
         "mysql+pymysql",
         user="root",
         password="root",
@@ -16,7 +16,7 @@ def getconn() -> pymysql.connections.Connection:
         autocommit=True,
     )
     return conn
-pool = sqlalchemy.create_engine(
+mydb = sqlalchemy.create_engine(
     "mysql+pymysql://",
     creator=getconn,
 )
