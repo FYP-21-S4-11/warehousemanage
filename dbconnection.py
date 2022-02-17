@@ -10,8 +10,8 @@ import os
 class dbcon:
 
     mydb = mysql.connector.connect(
-        user="user",
-        password="userpw",
+        user="root",
+        password="root",
         db="fypdatabase",
         auth_plugin="mysql_native_password",
         autocommit=True, 
