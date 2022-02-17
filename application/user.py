@@ -6,8 +6,10 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 from kafka import KafkaProducer
 
 from application import app
+from application import app
 from webforms import LoginForm
-from application import open_connection
+from app import open_connection
+
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
