@@ -4,7 +4,7 @@ from flask import Flask, Response
 mydb = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="kafka123@",
+    password="root",
     port="3306",
     database="fypdatabase",
     auth_plugin="mysql_native_password",
