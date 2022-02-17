@@ -2,7 +2,6 @@ import mysql.connector
 import os
 class dbcon:
 
-    db_connectionname = os.environ.get
     mydb = mysql.connector.connect(
         host="34.125.123.226",
         user="root",
