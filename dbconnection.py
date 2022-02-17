@@ -3,7 +3,6 @@ import os
 class dbcon:
 
     mydb = mysql.connector.connect(
-        host="0.0.0.0",
         user="user",
         password="userpw",
         database="fypdatabase",
