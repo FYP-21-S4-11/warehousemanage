@@ -1,17 +1,28 @@
-import mysql.connector
-from flask import Flask, Response
+from flask import Flask
+import pymysql
+import sqlalchemy
+from flask import Flask
+from google.cloud.sql.connector import connector
 
-mydb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="root",
-    port="3306",
-    database="fypdatabase",
-    auth_plugin="mysql_native_password",
-    autocommit=True)
-mycursor = mydb.cursor()
+
+def getconn() -> pymysql.connections.Connection:
+    conn: pymysql.connections.Connection = connector.connect(
+        "project:numeric-asset-341503:us-west4:fypdatabase",
+        "mysql+pymysql",
+        user="root",
+        password="root",
+        db="fypdatabase",
+        auth_plugin="mysql_native_password",
+        autocommit=True,
+    )
+    return conn
+pool = sqlalchemy.create_engine(
+    "mysql+pymysql://",
+    creator=getconn,
+)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "1234"
+
 
 from application import admin, supplier, staff, stock, store, user, product
