@@ -1,13 +1,24 @@
 import mysql.connector
 import os
+
+#db_user = os.environ["DB_USER"]
+#db_pass = os.environ["DB_PASS"]
+#db_name = os.environ["DB_NAME"]
+#db_socket_dir = os.environ.get("DB_SOCKET_DIR", "/cloudsql")
+#instance_connection_name = os.environ["INSTANCE_CONNECTION_NAME"]
+
 class dbcon:
-    
+
     mydb = mysql.connector.connect(
         user="user",
         password="userpw",
-        database="fypdatabase",
+        db="fypdatabase",
         auth_plugin="mysql_native_password",
-        autocommit=True)
+        autocommit=True, 
+        query={
+        "unix_socket": "{}/{}".format("/cloudsql","numeric-asset-341503:us-west4:fypdatabase")  # i.e "<PROJECT-NAME>:<INSTANCE-REGION>:<INSTANCE-NAME>"
+        }
+    )
     mycursor = mydb.cursor()
 
     def checkdbconnet(self):
