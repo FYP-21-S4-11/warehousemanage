@@ -8,9 +8,9 @@ from kafka import KafkaProducer
 
 from application import app
 from webforms import TopicForm, ReportSelectForm
-from application import getconn
+from application import init_connection_engine
 
-ksql = getconn()
+ksql = init_connection_engine()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
