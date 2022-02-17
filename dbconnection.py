@@ -1,7 +1,7 @@
 import mysql.connector
 import os
 class dbcon:
-
+    
     mydb = mysql.connector.connect(
         user="user",
         password="userpw",
