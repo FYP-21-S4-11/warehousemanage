@@ -31,6 +31,4 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = "1234"
 
 
-from datetime import datetime
-
-from flask import redirect, url_for, render_template, request, session, flash, json
+from application import admin, supplier, staff, stock, store, user, product
