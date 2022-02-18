@@ -7,7 +7,7 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 from kafka import KafkaProducer
 
 from application import app
-from application import open_connection
+from application import conn as ksql
 from webforms import LoginForm
 
 
@@ -27,7 +27,6 @@ def dtnow():
 @app.route("/", methods=["GET", "POST"])
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    conn = open_connection()
     form = LoginForm()
     if form.validate_on_submit():
         # request username and password
@@ -41,52 +40,52 @@ def login():
         _activitynoti = _username +" "+ _activity
         notificationdict = {"User": "Notification", "Activity": _activitynoti, "Time": _datetime}
         # check if username and password exists in database User
-        with conn.cursor() as cur:
-            cur.execute("SELECT UserType, Username FROM User WHERE Username = %s AND UserPW = %s AND UserType = %s",
-                        (username, password, usertype,))
-            record = cur.fetchone()
-            # print(record, username, password, usertype)
-            if "Admin" in str(record):
-                session["loggedin"] = True
-                session["username"] = record[1]
-                session["usertype"] = record[0]
-                print(usertype)
+        cur = ksql.cursor()
+        cur.execute("SELECT UserType, Username FROM User WHERE Username = %s AND UserPW = %s AND UserType = %s",
+                    (username, password, usertype,))
+        record = cur.fetchone()
+        # print(record, username, password, usertype)
+        if "Admin" in str(record):
+            session["loggedin"] = True
+            session["username"] = record[1]
+            session["usertype"] = record[0]
+            print(usertype)
+            flash("Logged in successfully! Welcome, " + username)
+            jsonproducer.send("logintopic", logindict)
+            jsonproducer.send("notificationtopic", notificationdict)
+            return redirect(url_for("adminhome"))
+        elif "Staff" in str(record):
+            session["loggedin"] = True
+            session["username"] = record[1]
+            session["usertype"] = record[0]
+            flash("Logged in successfully! Welcome, " + username)
+            print(usertype)
+            jsonproducer.send("logintopic", logindict)
+            jsonproducer.send("notificationtopic", notificationdict)
+            return redirect(url_for("staffhome"))
+        elif not username or not password or not type:
+            flash("Incorrect Username/Password! Please Try Again.")
+            return render_template("login.html", form=form)
+        elif "Supplier" in usertype:
+            cur = ksql.cursor()
+            cur.execute(
+                "SELECT * FROM Supplier WHERE SupplierCode = %s AND SupplierPassword = %s"
+                , (username, password))
+            found_user = cur.fetchone()
+            cur.close()
+            if found_user:
+                session["username"] = found_user[0]
+                username = found_user[1]
                 flash("Logged in successfully! Welcome, " + username)
                 jsonproducer.send("logintopic", logindict)
                 jsonproducer.send("notificationtopic", notificationdict)
-                return redirect(url_for("adminhome"))
-            elif "Staff" in str(record):
-                session["loggedin"] = True
-                session["username"] = record[1]
-                session["usertype"] = record[0]
-                flash("Logged in successfully! Welcome, " + username)
-                print(usertype)
-                jsonproducer.send("logintopic", logindict)
-                jsonproducer.send("notificationtopic", notificationdict)
-                return redirect(url_for("staffhome"))
-            elif not username or not password or not type:
+                return redirect(url_for("supplierhome"))
+            else:
                 flash("Incorrect Username/Password! Please Try Again.")
                 return render_template("login.html", form=form)
-            elif "Supplier" in usertype:
-                with conn.cursor() as cur:
-                    cur.execute(
-                        "SELECT * FROM Supplier WHERE SupplierCode = %s AND SupplierPassword = %s"
-                        , (username, password))
-                    found_user = cur.fetchone()
-                    cur.close()
-                    if found_user:
-                        session["username"] = found_user[0]
-                        username = found_user[1]
-                        flash("Logged in successfully! Welcome, " + username)
-                        jsonproducer.send("logintopic", logindict)
-                        jsonproducer.send("notificationtopic", notificationdict)
-                        return redirect(url_for("supplierhome"))
-                    else:
-                        flash("Incorrect Username/Password! Please Try Again.")
-                        return render_template("login.html", form=form)
-            else:
-                flash("Login Error")
-                return render_template("login.html", form=form)
+        else:
+            flash("Login Error")
+            return render_template("login.html", form=form)
     return render_template("login.html", form=form)
 
 # Logout
