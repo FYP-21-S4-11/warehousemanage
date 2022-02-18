@@ -6,10 +6,9 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 from kafka import KafkaProducer
 
 from application import app
+from application import mydb as ksql
 from webforms import SupplierAddForm
-from application import open_connection
 
-ksql = open_connection()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -94,13 +93,17 @@ def supplierdelete():
         cur.execute("SELECT SupplierCode FROM Supplier")
         exist = cur.fetchall()
         # form = SupplierDeleteForm()
-        if request.method == "POST":
-            cur.execute("DELETE FROM Supplier WHERE SupplierCode = %s", (code,))
-            ksql.commit()
-            flash("Supplier deleted!")
-            jsonproducer.send("suppliermanagementtopic", deletesupplierdict)
+        if exist:
+            if request.method == "POST":
+                cur.execute("DELETE FROM Supplier WHERE SupplierCode = %s", (code,))
+                ksql.commit()
+                flash("Supplier deleted!")
+                jsonproducer.send("suppliermanagementtopic", deletesupplierdict)
+                return redirect(url_for("suppliermenu"))
+            return render_template("supplierdelete.html", exist=exist)
+        else:
+            flash("No supplier record to delete!")
             return redirect(url_for("suppliermenu"))
-        return render_template("supplierdelete.html", exist=exist)
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))
@@ -131,6 +134,7 @@ def supplierview():
 @app.route("/supplierupdate/",  methods=["GET", "POST"])
 def supplierupdate():
     if "username" in session:
+        form = SupplierAddForm()
         username = session["username"]
         code = request.form.get("code")
         name = request.form.get("name")
@@ -145,13 +149,17 @@ def supplierupdate():
         cur = ksql.cursor()
         cur.execute("SELECT SupplierCode FROM Supplier")
         exist = cur.fetchall()
-        if request.method == "POST":
-            cur.execute("UPDATE Supplier SET SupplierName = %s, SupplierPhone = %s, SupplierAddress = %s, SupplierPassword = %s WHERE SupplierCode = %s", (name, phone, address, password, code))
-            ksql.commit()
-            flash("Supplier updated!")
-            jsonproducer.send("suppliermanagementtopic", updatesupplierdict)
+        if exist:
+            if request.method == "POST":
+                cur.execute("UPDATE Supplier SET SupplierName = %s, SupplierPhone = %s, SupplierAddress = %s, SupplierPassword = %s WHERE SupplierCode = %s", (name, phone, address, password, code))
+                ksql.commit()
+                flash("Supplier updated!")
+                jsonproducer.send("suppliermanagementtopic", updatesupplierdict)
+                return redirect(url_for("suppliermenu"))
+            return render_template("supplierupdate.html", exist=exist, form = form)
+        else:
+            flash("No supplier record to update!")
             return redirect(url_for("suppliermenu"))
-        return render_template("supplierupdate.html", exist=exist)
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))

@@ -1,3 +1,4 @@
+import os.path
 from datetime import datetime
 
 from flask import redirect, url_for, render_template, request, session, flash, json
@@ -5,11 +6,9 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 # =======================================
 from kafka import KafkaProducer
 
-
-import app
-from app import open_connection
+from application import app
+from application import open_connection
 from webforms import LoginForm
-
 
 
 def json_serializer(data):
@@ -78,7 +77,7 @@ def login():
                     if found_user:
                         session["username"] = found_user[0]
                         username = found_user[1]
-                        flash("Logged in successfully! Welcome, " + username )
+                        flash("Logged in successfully! Welcome, " + username)
                         jsonproducer.send("logintopic", logindict)
                         jsonproducer.send("notificationtopic", notificationdict)
                         return redirect(url_for("supplierhome"))
@@ -109,3 +108,7 @@ def logout():
         return redirect(url_for("login"))
     else:
         return redirect(url_for("login"))
+
+@app.route("/features")
+def features():
+    return  render_template("features.html")

@@ -6,10 +6,9 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 from kafka import KafkaProducer
 
 from application import app
+from application import mydb as ksql
 from webforms import StoreAddForm, StoreUpdateForm
-from application import open_connection
 
-ksql = open_connection()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -80,14 +79,19 @@ def storedelete():
         cur = ksql.cursor()
         cur.execute("SELECT StoreCode FROM Store")
         exist = cur.fetchall()
-        if request.method == "POST":
-            cur.execute("DELETE FROM Store WHERE StoreCode = %s",(code,))
-            ksql.commit()
-            flash("Store deleted!")
-            jsonproducer.send("storemanagementtopic", deletestoredict)
-            return redirect(url_for("storemenu"))
+        if exist:
 
-        return render_template("storedelete.html", exist = exist)
+            if request.method == "POST":
+                cur.execute("DELETE FROM Store WHERE StoreCode = %s",(code,))
+                ksql.commit()
+                flash("Store deleted!")
+                jsonproducer.send("storemanagementtopic", deletestoredict)
+                return redirect(url_for("storemenu"))
+
+            return render_template("storedelete.html", exist = exist)
+        else:
+            flash("No stores left to delete!")
+            return redirect(url_for("storemenu"))
     else:
         return redirect(url_for("login"))
 
@@ -130,15 +134,20 @@ def storeupdate():
         cur = ksql.cursor()
         cur.execute("SELECT StoreCode FROM Store")
         exist = cur.fetchall()
-        if request.method == "POST":
-            cur.execute(
-                "UPDATE Store SET StoreName = %s, Location = %s, Address = %s WHERE StoreCode = %s",
-                (name, location, address, code))
-            ksql.commit()
-            flash("Store updated!")
-            jsonproducer.send("storemanagementtopic", updatestoredict)
+        if exist:
+
+            if request.method == "POST":
+                cur.execute(
+                    "UPDATE Store SET StoreName = %s, Location = %s, Address = %s WHERE StoreCode = %s",
+                    (name, location, address, code))
+                ksql.commit()
+                flash("Store updated!")
+                jsonproducer.send("storemanagementtopic", updatestoredict)
+                return redirect(url_for("storemenu"))
+            return render_template("storeupdate.html", form=form, exist = exist)
+        else:
+            flash("No stores available to update!")
             return redirect(url_for("storemenu"))
-        return render_template("storeupdate.html", form=form, exist = exist)
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))

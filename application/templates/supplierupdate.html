@@ -61,17 +61,17 @@
         {% endfor %}
         </select>
         <br>
-        <label class="form-label">Supplier Name:</label>
-        <p><input class="form-control" type="text" name="name" placeholder="Enter Name..."></p>
+        {{ form.name.label(class="form-label") }}
+        {{ form.name(class="form-control") }}
         <br>
-        <label class="form-label">Supplier Password:</label>
-        <p><input class="form-control" type="text" name="password" placeholder="Enter Password..."></p>
+        {{ form.password.label(class="form-label") }}
+        {{ form.password(class="form-control") }}
         <br>
-        <label class="form-label">Supplier Phone:</label>
-        <p><input class="form-control" type="text" name="phone" placeholder="Enter Phone..."></p>
+        {{ form.phone.label(class="form-label") }}
+        {{ form.phone(class="form-control") }}
         <br>
-        <label class="form-label">Address:</label>
-        <p><input class="form-control" type="text" name="address" placeholder="Enter Address..."></p>
+        {{ form.address.label(class="form-label") }}
+        {{ form.address(class="form-control") }}
         <br>
         <button type="submit" name="button" class="button">Submit</button>
         <br><br>

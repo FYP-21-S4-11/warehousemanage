@@ -7,10 +7,8 @@ from kafka import KafkaConsumer
 from kafka import KafkaProducer
 
 from application import app
+from application import mydb as ksql
 from webforms import TopicForm, ReportSelectForm
-from application import open_connection
-
-ksql = open_connection()
 
 
 def json_serializer(data):
@@ -52,6 +50,11 @@ def adminprofile():
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))
+
+
+
+
+
 
 # topic select
 @app.route('/topicselect', methods=['GET', 'POST'])

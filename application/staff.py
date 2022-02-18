@@ -1,14 +1,14 @@
-from flask import Flask, redirect, url_for, render_template, request, session, flash, json
-from webforms import StaffAddForm
-from application import app
-from application import open_connection
-
-ksql = open_connection()
-
-#kafka stuff
-#=======================================
-from kafka import KafkaProducer
 from datetime import datetime
+
+from flask import redirect, url_for, render_template, request, session, flash, json
+# kafka stuff
+# =======================================
+from kafka import KafkaProducer
+
+from application import app
+from application import mydb as ksql
+from webforms import StaffAddForm
+
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -155,13 +155,17 @@ def staffupdate():
         cur = ksql.cursor()
         cur.execute("SELECT Username FROM User WHERE UserType = 'Staff'")
         exist = cur.fetchall()
-        if request.method == "POST":
-            cur.execute("UPDATE User SET FullName = %s, UserPW = %s, UserPhone = %s, UserAddress = %s, UserEmail = %s WHERE Username = %s", (name, password, phone, address, email, username))
-            ksql.commit()
-            flash("Staff account updated!")
-            jsonproducer.send("usermanagementtopic", userupdatedict)
+        if exist:
+            if request.method == "POST":
+                cur.execute("UPDATE User SET FullName = %s, UserPW = %s, UserPhone = %s, UserAddress = %s, UserEmail = %s WHERE Username = %s", (name, password, phone, address, email, username))
+                ksql.commit()
+                flash("Staff account updated!")
+                jsonproducer.send("usermanagementtopic", userupdatedict)
+                return redirect(url_for("staffmenu"))
+            return render_template("staffupdate.html", exist=exist, ID=usernameses, form=form)
+        else:
+            flash("No Staff account to update!")
             return redirect(url_for("staffmenu"))
-        return render_template("staffupdate.html", exist=exist, ID=usernameses, form=form)
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))

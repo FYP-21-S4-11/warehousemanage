@@ -1,15 +1,17 @@
-from datetime import datetime
-
-from flask import redirect, url_for, render_template, request, session, flash, json
-# kafka stuff
-# =======================================
-from kafka import KafkaProducer
-
+from flask import Flask, redirect, url_for, render_template, request, session, flash, json
+from datetime import date, datetime, time
+from webforms import LoginForm, QuantityForRemove
+import mysql.connector
+import pymysql
 from application import app
-from webforms import QuantityForRemove
-from application import open_connection
+from application import mydb as ksql
 
-ksql = open_connection()
+#kafka stuff
+#=======================================
+import kafka
+from kafka import KafkaProducer
+from kafka import KafkaConsumer
+from datetime import date, datetime
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -68,81 +70,92 @@ def sendstocks():
         skuexist = cur.fetchall()
         cur.close()
         quantity = request.form.get('quantity')
+        if skuexist:
 
-        if request.method == "POST":
+            if request.method == "POST":
 
-            # ProductSKU
-            sku = request.form.get("sku")
-            # generate stock sku
-            stocksku = supplierCode + ":" + sku
+                # ProductSKU
+                sku = request.form.get("sku")
+                # generate stock sku
+                stocksku = supplierCode + ":" + sku
 
-            _sku = str(sku)
-            _datetime = dtnow()
-            _activity = "Stock In"
-            _username = str(supplierCode)
-            _remark = _sku
-            _quantity = str(quantity)
-            stockindict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
-                           "Product": _sku, "Remark": _remark}
+                _sku = str(sku)
+                _datetime = dtnow()
+                _activity = "Stock In"
+                _username = str(supplierCode)
+                _remark = _sku
+                _quantity = str(quantity)
+                stockindict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
+                               "Product": _sku, "Remark": _remark}
 
+                # if sent out
+                activityreceived = _sku + ": " + _quantity + " received from "+_username
+                notificationrecdict = {"User": "Notification", "Activity": activityreceived, "Time": _datetime}
 
-            # check if stock sku
-            cur = ksql.cursor()
-            cur.execute("SELECT StockSKU FROM Stock WHERE StockSKU = %s", (stocksku,))
-            exist = cur.fetchall()
-            cur.close()
-            d = (0,)
-            if int(quantity) <= int(d[0]):
-                flash("No negative number!")
-                return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
-            # check if stock sku exist
-            if exist:
-                # check quantity from supplier
+                # check if stock sku
                 cur = ksql.cursor()
-                cur.execute("SELECT CurrentQuantity FROM Stock WHERE StockSKU = %s", (stocksku,))
-                dataout = cur.fetchone()
-
+                cur.execute("SELECT StockSKU FROM Stock WHERE StockSKU = %s", (stocksku,))
+                exist = cur.fetchall()
                 cur.close()
-                if None in dataout:
-                    result = quantity
+                d = (0,)
+
+                if int(quantity) <= int(d[0]):
+                    flash("No negative number!")
+                    return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
+                # check if stock sku exist
+                if exist:
+                    # check quantity from supplier
+                    cur = ksql.cursor()
+                    cur.execute("SELECT CurrentQuantity FROM Stock WHERE StockSKU = %s", (stocksku,))
+                    dataout = cur.fetchone()
+
+                    cur.close()
+                    if None in dataout:
+                        result = quantity
+                        cur = ksql.cursor()
+                        cur.execute(
+                            "Update Stock SET CurrentQuantity = %s WHERE StockSKU = %s",
+                            (result, stocksku))
+                        ksql.commit()
+                        cur.close()
+                        flash("Successfully sent stocks to warehouse!")
+                        jsonproducer.send("notificationtopic", notificationrecdict)
+                        jsonproducer.send("stocktopic", stockindict)
+                        return redirect(url_for("supplierhome"))
+                    else:
+                        result = int(dataout[0]) + int(quantity)
+                        cur = ksql.cursor()
+                        cur.execute(
+                            "Update Stock SET CurrentQuantity = %s WHERE StockSKU = %s",
+                            (result, stocksku))
+                        ksql.commit()
+                        cur.close()
+                        flash("Successfully sent stocks to warehouse!")
+                        jsonproducer.send("stocktopic", stockindict)
+                        jsonproducer.send("notificationtopic", notificationrecdict)
+                        return redirect(url_for("supplierhome"))
+                elif not quantity or not quantity.isnumeric() or int(quantity) <= 0:
+                    flash("Please enter a valid quantity.")
+                    return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
+                elif not exist:
+                    # insert stock sku
                     cur = ksql.cursor()
                     cur.execute(
-                        "Update Stock SET CurrentQuantity = %s WHERE StockSKU = %s",
-                        (result, stocksku))
+                        "INSERT INTO Stock (StockSKU, ProductSKU, SupplierCode, CurrentQuantity) VALUES (%s, %s, %s, %s)",
+                        (stocksku, sku, supplierCode, quantity))
                     ksql.commit()
                     cur.close()
                     flash("Successfully sent stocks to warehouse!")
+                    jsonproducer.send("notificationtopic", notificationrecdict)
                     jsonproducer.send("stocktopic", stockindict)
                     return redirect(url_for("supplierhome"))
                 else:
-                    result = int(dataout[0]) + int(quantity)
-                    cur = ksql.cursor()
-                    cur.execute(
-                        "Update Stock SET CurrentQuantity = %s WHERE StockSKU = %s",
-                        (result, stocksku))
-                    ksql.commit()
-                    cur.close()
-                    flash("Successfully sent stocks to warehouse!")
-                    jsonproducer.send("stocktopic", stockindict)
-                    return redirect(url_for("supplierhome"))
-            elif not quantity or not quantity.isnumeric() or int(quantity) <= 0:
-                flash("Please enter a valid quantity.")
-                return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
-            elif not exist:
-                # insert stock sku
-                cur = ksql.cursor()
-                cur.execute(
-                    "INSERT INTO Stock (StockSKU, ProductSKU, SupplierCode, CurrentQuantity) VALUES (%s, %s, %s, %s)",
-                    (stocksku, sku, supplierCode, quantity))
-                ksql.commit()
-                cur.close()
-                flash("Successfully sent stocks to warehouse!")
-                jsonproducer.send("stocktopic", stockindict)
-                return redirect(url_for("supplierhome"))
-            else:
-                flash("Error Occured!")
-                return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
-        return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
+                    flash("Error Occured!")
+                    return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
+            return render_template("sendstocks.html", ID=supplierCode, skuexist=skuexist, form= form)
+        else:
+            flash("No SKU to send out!")
+            return redirect(url_for("supplierhome"))
     else:
         flash("Please login again!")
         return redirect(url_for("logout"))
@@ -159,10 +172,10 @@ def supplyviewstock():
         items = cur.fetchall()
         cur.close()
         if not items:
-            flash("Empty stocks in the warehouse!")
+            flash("Empty")
             return render_template("supplyviewstock.html")
         elif items:
-            flash("View our stocks in the warehouse!")
+
             return render_template("supplyviewstock.html", items=items)
         else:
             flash("Error occurred!")
@@ -178,68 +191,76 @@ def remove():
         form = QuantityForRemove()
         username = session["username"]
         # select all productSKU
-        cur = ksql.cursor(buffered=True)
+        cur = ksql.cursor()
         cur.execute("SELECT ProductSKU FROM Stock")
         prod = cur.fetchall()
         cur.close()
+        if prod:
 
-        # product sku
-        sku = request.form.get("sku")
-        quantity = request.form.get("quantity")
+            # product sku
+            sku = request.form.get("sku")
+            quantity = request.form.get("quantity")
 
-        _sku = str(sku)
-        _datetime = dtnow()
-        _activity = "Stock Damaged"
-        _username = str(username)
-        _remark = _sku
-        _quantity = str(quantity)
-        stockDamageddict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
-                       "Product": _sku, "Remark": _remark}
-        # if low on stock
-        _activitynoti = _sku + "Low On Stock"
+            _sku = str(sku)
+            _datetime = dtnow()
+            _activity = "Stock Damaged"
+            _username = str(username)
+            _remark = _sku
+            _quantity = str(quantity)
+            stockDamageddict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
+                           "Product": _sku, "Remark": _remark}
+            # if low on stock
+            _activitynoti = _sku + " Low On Stock"
 
-        notificationdict = {"User": "Notification", "Activity": _activitynoti, "Time": _datetime}
-
-        if request.method == "POST":
-            if prod:
-                cur = ksql.cursor()
-                cur.execute("SELECT CurrentQuantity FROM Stock WHERE ProductSKU = %s", (sku,))
-                data = cur.fetchone()
-                cur.close()
-                print(data)
-                d = (0,)
-                if int(quantity) > int(data[0]):
-                    flash("Not enough stocks in the warehouse!")
-                    return render_template("remove.html", prod=prod, form= form)
-                elif int(quantity) <= int(d[0]):
-                    flash("No negative number!")
-                    return render_template("remove.html", prod=prod, form=form)
-
-                elif int(quantity) == int(data[0]):
+            notificationdict = {"User": "Notification", "Activity": _activitynoti, "Time": _datetime}
+            #if sent out
+            activitysent = _sku+": "+_quantity+" out of stock due to damage"
+            notificationdmgdict = {"User": "Notification", "Activity": activitysent, "Time": _datetime}
+            if request.method == "POST":
+                if prod:
                     cur = ksql.cursor()
-                    cur.execute("DELETE FROM Stock WHERE ProductSKU = %s", (sku,))
-                    ksql.commit()
+                    cur.execute("SELECT CurrentQuantity FROM Stock WHERE ProductSKU = %s", (sku,))
+                    data = cur.fetchone()
                     cur.close()
-                    flash("No more stocks in the warehouse")
-                    jsonproducer.send("notificationtopic", notificationdict)
-                    jsonproducer.send("stocktopic", stockDamageddict)
-                    redirect(url_for("stockmenu"))
-                elif int(quantity) < int(data[0]):
-                    result = int(data[0]) - int(quantity)
-                    cur = ksql.cursor()
-                    cur.execute("UPDATE Stock SET CurrentQuantity = %s WHERE ProductSKU = %s", (result, sku,))
-                    ksql.commit()
-                    cur.close()
-                    if int(result) < 100:
+                    print(data)
+                    d = (0,)
+                    e = (500,)
+                    if int(quantity) > int(data[0]):
+                        flash("Not enough stocks in the warehouse!")
+                        return render_template("remove.html", prod=prod, form= form)
+
+                    elif int(quantity) <= int(d[0]):
+                        flash("No negative number!")
+                        return render_template("remove.html", prod=prod, form=form)
+
+                    elif int(quantity) == int(data[0]):
+                        cur = ksql.cursor()
+                        cur.execute("DELETE FROM Stock WHERE ProductSKU = %s", (sku,))
+                        ksql.commit()
+                        cur.close()
+                        flash("No more stocks in the warehouse")
                         jsonproducer.send("notificationtopic", notificationdict)
-                    flash("Quantity updated!")
-                    jsonproducer.send("stocktopic", stockDamageddict)
-                    redirect(url_for("stockmenu"))
-                else:
-                    flash("Please fill in the necessary fields!")
-                    return render_template("remove.html", prod=prod, form= form)
+                        jsonproducer.send("notificationtopic", notificationdmgdict)
+                        jsonproducer.send("stocktopic", stockDamageddict)
+                        return redirect(url_for("stockmenu"))
+                    elif int(quantity) < int(data[0]):
+                        result = int(data[0]) - int(quantity)
+                        cur = ksql.cursor()
+                        cur.execute("UPDATE Stock SET CurrentQuantity = %s WHERE ProductSKU = %s", (result, sku,))
+                        ksql.commit()
+                        cur.close()
+                        if int(result) < 100:
+                            jsonproducer.send("notificationtopic", notificationdict)
+                        flash("Quantity updated!")
+                        jsonproducer.send("stocktopic", stockDamageddict)
+                        jsonproducer.send("notificationtopic", notificationdmgdict)
+                        return redirect(url_for("stockmenu"))
+
+            else:
+                return render_template("remove.html", prod=prod, form= form)
         else:
-            return render_template("remove.html", prod=prod, form= form)
+            flash("No ProductSku exist!")
+            return redirect(url_for("stockmenu"))
         return render_template("remove.html", prod=prod, form= form)
     else:
         flash("Please login again!")
@@ -260,65 +281,75 @@ def sendstore():
         cur.execute("SELECT StoreCode FROM Store")
         scode = cur.fetchall()
         cur.close()
+        if prod:
+            if scode:
+                # product sku
+                sku = request.form.get("sku")
+                quantity = request.form.get("quantity")
+                code = request.form.get("code")
+                _sku = str(sku)
+                _code = str(code)
+                _datetime = dtnow()
+                _activity = "Stock Out to Store "+_code
+                _username = str(username)
+                _remark = _sku
+                _quantity = str(quantity)
+                stockDamageddict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
+                               "Product": _sku, "Remark": _remark}
 
-        # product sku
-        sku = request.form.get("sku")
-        quantity = request.form.get("quantity")
-        code = request.form.get("code")
-        _sku = str(sku)
-        _code = str(code)
-        _datetime = dtnow()
-        _activity = "Stock Out to Store "+_code
-        _username = str(username)
-        _remark = _sku
-        _quantity = str(quantity)
-        stockDamageddict = {"User": _username, "Activity": _activity, "Time": _datetime, "Quantity": _quantity,
-                       "Product": _sku, "Remark": _remark}
+                # if low on stock
+                _activitynoti = _sku + " Low On Stock"
 
-        # if low on stock
-        _activitynoti = _sku + "Low On Stock"
+                notificationdict = {"User": "Notification", "Activity": _activitynoti, "Time": _datetime}
+                # if sent out
+                activitysent = _sku + ": " + _quantity + " sent to "+_code
+                notificationsentdict = {"User": "Notification", "Activity": activitysent, "Time": _datetime}
 
-        notificationdict = {"User": "Notification", "Activity": _activitynoti, "Time": _datetime}
+                if request.method == "POST":
+                    if prod:
+                        cur = ksql.cursor()
+                        cur.execute("SELECT CurrentQuantity FROM Stock WHERE ProductSKU = %s", (sku,))
+                        data = cur.fetchone()
+                        cur.close()
+                        d = (0,)
 
-        if request.method == "POST":
-            if prod:
-                cur = ksql.cursor()
-                cur.execute("SELECT CurrentQuantity FROM Stock WHERE ProductSKU = %s", (sku,))
-                data = cur.fetchone()
-                cur.close()
-                d = (0,)
+                        if int(quantity) > int(data[0]):
+                            flash("Not enough stocks in the warehouse!")
+                            return render_template("tostore.html", prod=prod, code=scode, form= form)
+                        elif int(quantity) <= int(d[0]):
+                            flash("No negative number!")
+                            return render_template("tostore.html", prod=prod, form=form, code=scode)
+                        elif int(quantity) == int(data[0]):
+                            cur = ksql.cursor()
+                            cur.execute("DELETE FROM Stock WHERE ProductSKU = %s", (sku,))
+                            ksql.commit()
+                            cur.close()
+                            flash("No more stocks in the warehouse")
+                            jsonproducer.send("stocktopic", stockDamageddict)
+                            jsonproducer.send("notificationtopic", notificationdict)
+                            jsonproducer.send("notificationtopic", notificationsentdict)
+                            return redirect(url_for("stockmenu"))
+                        elif int(quantity) < int(data[0]):
+                            result = int(data[0]) - int(quantity)
+                            cur = ksql.cursor()
+                            cur.execute("UPDATE Stock SET CurrentQuantity = %s WHERE ProductSKU = %s", (result, sku,))
+                            ksql.commit()
+                            cur.close()
+                            if int(result) < 100:
+                                jsonproducer.send("notificationtopic", notificationdict)
+                            flash("Quantity updated!")
+                            jsonproducer.send("stocktopic", stockDamageddict)
+                            jsonproducer.send("notificationtopic", notificationsentdict)
+                            return redirect(url_for("stockmenu"))
 
-                if int(quantity) > int(data[0]):
-                    flash("Not enough stocks in the warehouse!")
-                    return render_template("tostore.html", prod=prod, code=scode, form= form)
-                elif int(quantity) <= int(d[0]):
-                    flash("No negative number!")
-                    return render_template("tostore.html", prod=prod, form=form, code=scode)
-                elif int(quantity) == int(data[0]):
-                    cur = ksql.cursor()
-                    cur.execute("DELETE FROM Stock WHERE ProductSKU = %s", (sku,))
-                    ksql.commit()
-                    cur.close()
-                    flash("No more stocks in the warehouse")
-                    jsonproducer.send("stocktopic", stockDamageddict)
-                    jsonproducer.send("notificationtopic", notificationdict)
-                    return redirect(url_for("stockmenu"))
-                elif int(quantity) < int(data[0]):
-                    result = int(data[0]) - int(quantity)
-                    cur = ksql.cursor()
-                    cur.execute("UPDATE Stock SET CurrentQuantity = %s WHERE ProductSKU = %s", (result, sku,))
-                    ksql.commit()
-                    cur.close()
-                    if int(result) < 100:
-                        jsonproducer.send("notificationtopic", notificationdict)
-                    flash("Quantity updated!")
-                    jsonproducer.send("stocktopic", stockDamageddict)
-                    return redirect(url_for("stockmenu"))
                 else:
-                    flash("Please fill in the necessary fields!")
-                    return render_template("tostore.html", prod=prod, code=scode, form=form)
+                    return render_template("tostore.html", prod=prod, code=scode, form= form)
+            else:
+                flash("No stores in record!")
+                return redirect(url_for("stockmenu"))
         else:
-            return render_template("tostore.html", prod=prod, code=scode, form= form)
+            flash("No Product left in record!")
+            return redirect(url_for("stockmenu"))
         return render_template("tostore.html", prod=prod, code=scode, form= form)
     else:
         flash("Please login again!")

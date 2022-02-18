@@ -128,3 +128,22 @@ nav {
 h2 p {
     margin-left: 100px;
 }
+
+/* features.html */
+.content {
+    width: 400px;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.content img {
+    margin-right: 15px;
+    float: left;
+}
+
+.content h5,
+.content p{
+    margin-left: 15px;
+    display: block;
+    margin: 2px 0 0 0;
+}

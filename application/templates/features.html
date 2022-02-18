@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+      <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+    <title>Login Page</title>
+    <style>
+        body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        }
+        .container {
+        width: 100%;
+        height: 100%;
+        margin-top: 70px;
+        margin-bottom: 25px;
+        }
+        .header {
+        margin-top:auto;
+        padding-bottom: 40px;
+        }
+        p {
+        font-size: 14px;
+        }
+        .leftpane {
+        width: 33.33%;
+        height: auto;
+        float: left;
+        border-collapse: collapse;
+        }
+        .middlepane {
+        width: 33.33%;
+        height: auto;
+        float: left;
+        border-collapse: collapse;
+        background-color:Re;
+        }
+        .rightpane {
+        width: 33.33%;
+        height: auto;
+        position: relative;
+        float: left;
+        border-collapse: collapse;
+        }
+        img {
+        float: left;
+        width:10;
+        height:10;
+        }
+    </style>
+
+</head>
+<body style="background-color:#5f788a;">
+<!--    navigation bar-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-steel" style="background-color: #5f788a;">
+  <a class="navbar-brand" href="/login">Warehouse Management</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+</nav>
+<div class="container">
+<div class="header" style="color:WHITE;">
+    <h3><strong>What is Warehouse Management?</strong></h3>
+    <p>Warehouse Management is an application that allows the suppliers to manage their stocks inside the warehouse. Suppliers can use Warehouse Managemenr to view and modify the amount the type of products they want to sell. The staffs and admins use our applications reach out to vendors and clients to connect them and manage them. A unique feature about Warehouse Management is Kafka Monitoring, where it is able to track the events of the users using the webiste in <strong>real-time</strong></p>
+    <hr>
+</div>
+<hr>
+    <div class="leftpane">
+        <h3 align="middle">Supplier Features</h3>
+        <div class="content">
+        <img src="{{ url_for('static', filename='product.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Manage Products</h5>
+            <p>Allow your vendors to create the product.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='stocks to warehouse.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Send Stocks</h5>
+            <p>Let your vendor send their products in a simple and easy process.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='stock.png') }}" align="middle" alt="product" width="50px" />
+        <h5>View Stocks</h5>
+            <p>View the quantity of your stocks in the warehouse.</p>
+        </div>
+    </div>
+
+    <div class="middlepane">
+      <h3 align="middle">Admin Features</h3>
+        <div class="content">
+        <img src="{{ url_for('static', filename='staff.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Manage Staff</h5>
+            <p>Create and modify accounts for your employees in a smooth process.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='report.png') }}" align="middle" alt="product" width="50px" />
+        <h5>View Reports of Stock Activities</h5>
+            <p>Generate your own report of your stocks in the warehouse.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='notification.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Alert Notifications</h5>
+            <p>Always be alerted of the activities in your warehouse and when there are low stocks.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='log.png') }}" align="middle" alt="product" width="50px" />
+        <h5>View Logs</h5>
+            <p>Check out a more detailed log table generated our Kafka's Monitoring feature.</p>
+        </div>
+    </div>
+
+    <div class="rightpane">
+        <h3 align="middle">Staff Features</h3>
+        <div class="content">
+        <img src="{{ url_for('static', filename='supplier.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Manage Suppliers</h5>
+            <p>Simply add vendors in a 5-step process.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='delivery.png') }}" align="middle" alt="product" width="70px" />
+        <h5>Manage Stocks</h5>
+            <p>Grants full access to managing the stocks in the warehouse.</p>
+        </div>
+        <div class="content">
+        <img src="{{ url_for('static', filename='store.png') }}" align="middle" alt="product" width="50px" />
+        <h5>Manage Store</h5>
+            <p>Create stores in the warehouse.</p>
+        </div>
+    </div>
+</div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</body>
+</html>
