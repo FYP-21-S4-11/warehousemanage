@@ -5,7 +5,7 @@ from flask import Flask
 
 unix_socket = '/cloudsql/{}'.format("numeric-asset-341503:us-west4:fypdatabase")
 conn = pymysql.Connect(user="root",
-                       password="kafka123@",
+                       password="root",
                        unix_socket=unix_socket,
                        db="fypdatabase",
                        cursorclass=pymysql.cursors.DictCursor)
