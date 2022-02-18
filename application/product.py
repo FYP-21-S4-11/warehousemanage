@@ -7,9 +7,9 @@ from kafka import KafkaProducer
 
 from application import app
 from webforms import ProductAddForm
-from application import init_connection_engine
+from application import open_connection
 
-ksql = init_connection_engine()
+ksql = open_connection()
 
 def json_serializer(data):
     return json.dumps(data).encode("utf-8")
@@ -88,7 +88,7 @@ def productdelete():
         _username = str(username)
         deleteproductdict = {"User": _username, "Activity": _activity, "Time": _datetime}
         cur = ksql.cursor()
-        cur.execute("SELECT ProductSKU FROM Product")
+        cur.execute("SELECT ProductSKU FROM Product SupplierCode = %s", (username,))
         exist = cur.fetchall()
         if exist:
             if request.method == "POST":

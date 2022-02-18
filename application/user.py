@@ -5,10 +5,11 @@ from flask import redirect, url_for, render_template, request, session, flash, j
 # =======================================
 from kafka import KafkaProducer
 
-from application import app
-from application import app
-from webforms import LoginForm
+
+import app
 from app import open_connection
+from webforms import LoginForm
+
 
 
 def json_serializer(data):
