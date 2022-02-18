@@ -23,4 +23,4 @@ principals = Principal(app)
 admin_permission = Permission(RoleNeed('admin'))
 staff_permission = Permission(RoleNeed('staff'))
 
-from application import admin, supplier, staff, stock, store, user, product
+from application import user
